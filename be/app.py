@@ -120,8 +120,16 @@ def get_places():
 @app.route('/fetch_reviews', methods=['GET'])
 def fetch_reviews():
     try:
+        print("\nEndpoint /fetch_reviews hit!")  # Check if the endpoint is accessed
+
+        print("Fetching unscraped places...")
         places = db.get_unscraped_places()
-        print(f"\n1. Found {len(places)} unscraped places")
+
+        if places is None:
+            print("Error: get_unscraped_places() returned None")
+            return jsonify({"error": "Database query failed"}), 500
+        
+        print(f"1. Found {len(places)} unscraped places")
         
         all_stored_reviews = []
         
@@ -130,8 +138,12 @@ def fetch_reviews():
                 print(f"\n2. Fetching reviews for place: {place.name} ({place.place_id})")
                 
                 reviews = get_google_review_by_place_id(place.place_id)
-                print(f"3. Found {len(reviews)} reviews")
+                if reviews is None:
+                    print(f"Error: get_google_review_by_place_id() returned None for {place.name}")
+                    continue
                 
+                print(f"3. Found {len(reviews)} reviews")
+
                 place_reviews = []
                 for review_data in reviews:
                     try:
@@ -152,7 +164,6 @@ def fetch_reviews():
                             comment=review_data.get("comment", ""),
                             photos=[],
                             checked=False,
-                            
                         )
                         
                         result = db.insert_review(review)
@@ -162,10 +173,10 @@ def fetch_reviews():
                     except Exception as e:
                         print(f"Error processing review: {str(e)}")
                         continue
-                
+
                 db.update_place_scraped_status(place.place_id, True)
                 print(f"5. Marked place {place.name} as scraped")
-                
+
                 all_stored_reviews.append({
                     "place_id": place.place_id,
                     "place_name": place.name,
@@ -176,18 +187,20 @@ def fetch_reviews():
             except Exception as e:
                 print(f"Error processing place {place.place_id}: {str(e)}")
                 continue
-        
-        return jsonify({
+
+        print("Finalizing response...")
+        response_data = {
             "places_processed": len(places),
             "total_reviews": sum(p["reviews_count"] for p in all_stored_reviews),
             "results": all_stored_reviews
-        })
-        
+        }
+        print("Response data prepared successfully")
+
+        return jsonify(response_data)
+
     except Exception as e:
         print(f"Error fetching reviews: {str(e)}")
-        return jsonify({
-            "error": str(e)
-        }), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/fetch_reviews/<place_id>', methods=['GET'])
 def fetch_reviews_by_id(place_id):
