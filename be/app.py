@@ -7,6 +7,7 @@ import requests
 from config import GOOGLE_MAPS_API_KEY, MONGO_URI
 from google_place_scrapper import get_google_review_by_place_id
 from scrapper import get_city_coordinates
+from flask import abort
 
 app = Flask(__name__)
 
@@ -291,6 +292,68 @@ def list_reviews():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/reviews/<review_id>/update-status', methods=['POST'])
+def update_review_status(review_id):
+    try:
+        # Get status from request JSON
+        data = request.get_json()
+        status = data.get('status')
+
+        # Validate status
+        if status not in ["approved", "rejected"]:
+            return jsonify({
+                "error": "Invalid status. Use 'approved' or 'rejected'."
+            }), 400
+
+        # Update review status in database
+        updated = db.update_review_status(review_id, status)
+        
+        if not updated:
+            return jsonify({
+                "error": "Review not found"
+            }), 404
+
+        return jsonify({
+            "message": f"Review {status} successfully"
+        })
+
+    except Exception as e:
+        print(f"Error updating review status: {str(e)}")
+        return jsonify({
+            "error": str(e)
+        }), 500
+
+@app.route('/ai_response/<review_id>', methods=['POST'])
+def update_ai_response(review_id):
+    try:
+        # For now, using hardcoded values
+        ai_percentage = 85.5  # Example percentage
+        ai_response = "This review appears to be genuine based on language patterns and content."
+        
+        # Update the review in database
+        updated = db.update_ai_response(review_id, ai_percentage, ai_response)
+        
+        if not updated:
+            return jsonify({
+                "error": "Review not found"
+            }), 404
+
+        return jsonify({
+            "success": True,
+            "review_id": review_id,
+            "ai_analysis": {
+                "percentage": ai_percentage,
+                "feedback": ai_response
+            },
+            "message": "AI response updated successfully"
+        })
+
+    except Exception as e:
+        print(f"Error updating AI response: {str(e)}")
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(port=5999,debug=True)

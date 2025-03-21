@@ -21,9 +21,13 @@ class Review(BaseModel):
     comment: Optional[str] = None
     photos: List[str] = Field(default_factory=list)
     checked: bool = Field(default=False, description="Flag for processing status")
-    ai_response: bool = Field(default=False, description="Indicates if AI has processed the review")  
+    ai_percentage: Optional[float] = Field(None, description="AI analysis percentage")
+    ai_response: Optional[str] = Field(None, description="AI feedback on the review")
+
 
     created_at: datetime = Field(default_factory=datetime.now)
+    approval_status: Optional[str] = Field(None)
+
 
     class Config:
         json_encoders = {

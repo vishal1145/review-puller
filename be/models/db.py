@@ -134,4 +134,34 @@ class MongoDB:
             return [Place(**place) for place in places]
         except Exception as e:
             print(f"Error getting unscraped places: {str(e)}")
-            return [] 
+            return []
+
+    def update_review_status(self, review_id: str, status: str) -> bool:
+        try:
+            result = self.reviews.update_one(
+                {"review_id": review_id},
+                {"$set": {"approval_status": status}}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            print(f"Error updating review status: {e}")
+            return False
+
+    def update_ai_response(self, review_id: str, percentage: float, feedback: str) -> bool:
+        try:
+            result = self.reviews.update_one(
+                {"review_id": review_id},
+                {
+                    "$set": {
+                        "ai_percentage": percentage,
+                        "ai_response": feedback
+                    }
+                }
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            print(f"Error updating AI response: {e}")
+            return False 
+        
+
+        

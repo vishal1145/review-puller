@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field
 class Place(BaseModel):
     place_id: str = Field(..., description="Unique Google Place ID")
     name: str = Field(..., description="Name of the place")
+    location_name: str
+
     address: Optional[str] = Field(None, description="Address of the place")
     latitude: float = Field(..., description="Latitude coordinate")
     longitude: float = Field(..., description="Longitude coordinate")
