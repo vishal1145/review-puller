@@ -17,7 +17,7 @@ except Exception as e:
     print(f"Failed to connect to MongoDB: {e}")
     exit(1)
 
-def fetch_and_store_places(latitude: float, longitude: float, place_type: str = "restaurant", radius: int = 1500):
+def fetch_and_store_places(latitude: float, longitude: float, place_type: str = "restaurant", radius: int = 1500,city:str="NA"):
     API_URL = f"https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={latitude},{longitude}&radius={radius}&type={place_type}&key={GOOGLE_MAPS_API_KEY}"
     
     print(f"\n1. Calling Google API: {API_URL}")
@@ -40,6 +40,7 @@ def fetch_and_store_places(latitude: float, longitude: float, place_type: str = 
                 place = Place(
                     place_id=place_data["place_id"],
                     name=place_data["name"],
+                    location_name=city,
                     address=place_data.get("vicinity"),
                     latitude=place_data["geometry"]["location"]["lat"],
                     longitude=place_data["geometry"]["location"]["lng"],
@@ -85,7 +86,7 @@ def fetch_places():
             
         latitude, longitude = coordinates
         
-        places = fetch_and_store_places(latitude, longitude, place_type, radius)
+        places = fetch_and_store_places(latitude, longitude, place_type, radius,city)
         print(f"Found {len(places)} places in {city}")
         
         response_data = {
