@@ -11,6 +11,7 @@ class Review(BaseModel):
     review_id: str = Field(..., description="Unique review ID")
     place_id: str = Field(..., description="Associated Google Place ID")
     place_name: Optional[str] = None
+    location_name : Optional[str] = None
     reviewer: Reviewer
     link: str
     source: str = "Google"
