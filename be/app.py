@@ -150,6 +150,7 @@ def fetch_reviews():
                         review = Review(
                             review_id=review_data["review_id"],
                             place_id=place.place_id,
+                            place_name = place.name,
                             reviewer=Reviewer(
                                 display_name=review_data["reviewer"]["display_name"],
                                 profile_photo_url="",
